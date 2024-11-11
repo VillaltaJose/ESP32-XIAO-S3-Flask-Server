@@ -227,11 +227,12 @@ def video_stream_edge_detection():
     return Response(generate_frames(apply_edge_detection),
                     mimetype="multipart/x-mixed-replace; boundary=frame")
 
-@app.route("/morph_operations")
-def morph_operations():
-    IMAGES = ["./static/images/image1.jpg", "./static/images/image2.jpg", "./static/images/image3.jpg"]
+@app.route("/morph_operations/<int:kernel_size>")
+def morph_operations(kernel_size):
+    if kernel_size not in [37, 15, 7]:
+        return "Tamaño de kernel no válido. Usa 37, 15, o 7.", 400
     
-    kernel_size = 7
+    IMAGES = ["./static/images/image1.jpg", "./static/images/image2.jpg", "./static/images/image3.jpg"]
 
     processed_images = {}
     for idx, image_path in enumerate(IMAGES):

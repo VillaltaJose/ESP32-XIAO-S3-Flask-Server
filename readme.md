@@ -42,7 +42,9 @@ Aplica ruido aleatorio a una imagen en escala de grises y muestra la imagen orig
 ### `/video_stream_edge_detection`
 Aplica dos algoritmos de detección de bordes (Canny y Sobel) al video. En ambos casos, se aplica la detección con y sin suavizado de imágenes.
 
-### `/morph_operations`
+### `/morph_operations/{kernel_size}`
+> La variable `kernel_size` es de tipo entero, acepta valores de: `37`, `15`, `7`
+
 Aplica operaciones morfológicas (erosión, dilatación, Top Hat, Black Hat y una combinación) a imágenes estáticas y muestra los resultados.
 
 Las imágenes se encuentran en el path `static/images`.
