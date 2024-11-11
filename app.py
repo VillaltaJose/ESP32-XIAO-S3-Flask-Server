@@ -91,7 +91,7 @@ def apply_logarithmic_filter(frame):
     cielab_log = cv2.merge(channels)
     logaritmica = cv2.cvtColor(cielab_log, cv2.COLOR_Lab2BGR)
 
-    return logaritmica
+    return np.hstack((frame, logaritmica))
 
 def apply_filters(frame, kernel_sizes=[3, 5, 7]):
     results = []
