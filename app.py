@@ -77,6 +77,26 @@ def apply_clahe(cv_img, limit=40):
     res = cv2.cvtColor(clahe_img, cv2.COLOR_Lab2BGR)
     return np.hstack((cv_img, res))
 
+def apply_filters(frame, kernel_sizes=[3, 5, 7]):
+    results = []
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    for size in kernel_sizes:
+        median = cv2.medianBlur(gray_frame, size)
+        cv2.putText(median, f"Mediana {size}x{size}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, 255, 2)
+
+        blur = cv2.blur(gray_frame, (size, size))
+        cv2.putText(blur, f"Blur {size}x{size}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, 255, 2)
+
+        gaussian = cv2.GaussianBlur(gray_frame, (size, size), 0)
+        cv2.putText(gaussian, f"Gaussiano {size}x{size}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, 255, 2)
+
+        row = np.hstack((median, blur, gaussian))
+        results.append(row)
+
+    combined_result = np.vstack(results)
+    return combined_result
+
 # Función para detectar movimiento
 def detect_motion(prev_frame, current_frame, threshold=30):
     gray_prev = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
@@ -133,6 +153,24 @@ def apply_morph_operations(image, kernel_size):
         "combined": combined
     }
 
+def apply_edge_detection(frame):
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    blurred_frame = cv2.GaussianBlur(gray_frame, (5, 5), 0)
+
+    canny = cv2.Canny(gray_frame, 100, 200)
+    sobel = cv2.Sobel(gray_frame, cv2.CV_64F, 1, 1, ksize=5)
+    sobel = cv2.convertScaleAbs(sobel)
+
+    canny_blurred = cv2.Canny(blurred_frame, 100, 200)
+    sobel_blurred = cv2.Sobel(blurred_frame, cv2.CV_64F, 1, 1, ksize=5)
+    sobel_blurred = cv2.convertScaleAbs(sobel_blurred)
+
+    top = np.hstack((gray_frame, canny, sobel))
+    bottom = np.hstack((blurred_frame, canny_blurred, sobel_blurred))
+    combined_result = np.vstack((top, bottom))
+
+    return combined_result
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -152,6 +190,11 @@ def video_stream_clahe():
     return Response(generate_frames(apply_clahe),
                     mimetype="multipart/x-mixed-replace; boundary=frame")
 
+@app.route("/video_stream_filters")
+def video_stream_filters():
+    return Response(generate_frames(apply_filters),
+                    mimetype="multipart/x-mixed-replace; boundary=frame")
+
 @app.route("/video_stream_motion")
 def video_stream_motion():
     return Response(generate_frames(detect_motion),
@@ -160,6 +203,11 @@ def video_stream_motion():
 @app.route("/video_stream_gray_noise")
 def video_stream_gray_noise():
     return Response(generate_frames(apply_gray_noise),
+                    mimetype="multipart/x-mixed-replace; boundary=frame")
+
+@app.route("/video_stream_edge_detection")
+def video_stream_edge_detection():
+    return Response(generate_frames(apply_edge_detection),
                     mimetype="multipart/x-mixed-replace; boundary=frame")
 
 @app.route("/morph_operations")
