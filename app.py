@@ -77,6 +77,22 @@ def apply_clahe(cv_img, limit=40):
     res = cv2.cvtColor(clahe_img, cv2.COLOR_Lab2BGR)
     return np.hstack((cv_img, res))
 
+def apply_logarithmic_filter(frame):
+    cielab = cv2.cvtColor(frame, cv2.COLOR_BGR2Lab)
+    channels = list(cv2.split(cielab))
+
+    logL = channels[0].astype(np.float32) + 1  # +1 para evitar log(0)
+    logL = np.log(logL)
+
+    cv2.normalize(logL, logL, 0, 255, cv2.NORM_MINMAX)
+    logL = logL.astype(np.uint8)
+
+    channels[0] = logL
+    cielab_log = cv2.merge(channels)
+    logaritmica = cv2.cvtColor(cielab_log, cv2.COLOR_Lab2BGR)
+
+    return logaritmica
+
 def apply_filters(frame, kernel_sizes=[3, 5, 7]):
     results = []
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -188,6 +204,11 @@ def video_stream_hist_eq():
 @app.route("/video_stream_clahe")
 def video_stream_clahe():
     return Response(generate_frames(apply_clahe),
+                    mimetype="multipart/x-mixed-replace; boundary=frame")
+
+@app.route("/video_stream_logarithmic")
+def video_stream_logarithmic():
+    return Response(generate_frames(apply_logarithmic_filter),
                     mimetype="multipart/x-mixed-replace; boundary=frame")
 
 @app.route("/video_stream_filters")
