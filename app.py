@@ -132,17 +132,13 @@ def generate_frames(process_function):
     for frame in video_capture():
         current_time = time.time()
         if prev_frame is not None:
-            # Calcular FPS
             fps = 1 / (current_time - last_time)
             last_time = current_time
 
-            # Procesar el frame
             processed_frame = process_function(prev_frame, frame) if process_function == detect_motion else process_function(frame)
 
-            # Superponer texto de FPS
             cv2.putText(processed_frame, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
-            # Codificar la imagen a JPEG
             flag, encoded_image = cv2.imencode(".jpg", processed_frame)
             if not flag:
                 continue
